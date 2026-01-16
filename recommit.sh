@@ -14,10 +14,14 @@ DRY_RUN=true
 repos=$(gh repo list $USERNAME --limit 100 --json name,createdAt -q 'sort_by(.createdAt) | .[].name')
 
 # Create NEWFILE.md content
+
 cat > /tmp/NEWFILE.md << 'EOF'
 # TEXT HERE
 More text here.
+Even more text here.
+Copyright by so and so... 
 EOF
+
 if [ "$DRY_RUN" = true ]; then
   echo "DRY-RUN MODE - No changes will be pushed"
   echo "Set DRY_RUN=false to actually push changes"
@@ -67,4 +71,5 @@ else
   echo "Done! Processed all repos."
 
 fi
+
 
