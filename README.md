@@ -1,10 +1,11 @@
-# Clone-All  
+# Github Helper Scripts aka Clone-All.
+
 Clone all your GitHub repos
 
 Download GitHub CLI:  
 https://cli.github.com/
 
-Attached are a few **git bash** helper scripts.
+Attached are a few **git bash** helper scripts as well, for more control.
 
 ---
 
