@@ -1,4 +1,4 @@
-# Github Helper Scripts aka Clone-All.
+# Git Bash Helper Scripts aka Clone-All.
 
 Clone all your GitHub repos
 
