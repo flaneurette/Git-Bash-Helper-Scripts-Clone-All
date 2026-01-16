@@ -4,6 +4,8 @@ Clone all your GitHub repos
 Download GitHub CLI:  
 https://cli.github.com/
 
+Attached are a few **git bash** helper scripts.
+
 ---
 
 ## Bash (Linux / macOS / Git Bash)
