@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Create a new file in ALL your repositories, and commit it.
+# Especially useful if you want to add a copyright.md or other file to ALL your repositories.
+# Standard runs in dry run (no changes made)
 
 # Your username
 USERNAME="YOURUSERNAME"
@@ -63,4 +65,5 @@ if [ "$DRY_RUN" = true ]; then
 else
   echo ""
   echo "Done! Processed all repos."
+
 fi
