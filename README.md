@@ -3,7 +3,12 @@
 Clone all your GitHub repos
 
 Download GitHub CLI:  
+
 https://cli.github.com/
+
+Git bash, etc for windows:
+
+https://gitforwindows.org/
 
 Attached are a few **git bash** helper scripts as well, for more control.
 
