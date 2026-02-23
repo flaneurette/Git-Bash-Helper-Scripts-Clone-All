@@ -10,10 +10,7 @@ USERNAME="YOURUSERNAME"
 # Dry-run mode: set to "true" to test without pushing, "false" to actually push
 DRY_RUN=true
 
-# Get all repo names (increase limit if you have more than 100 repos)
-repos=$(gh repo list $USERNAME --limit 100 --json name,createdAt -q 'sort_by(.createdAt) | .[].name')
-
-# Create NEWFILE.md content
+repos=$(gh repo list $USERNAME --limit 100 --json name,createdAt -q 'sort_by(.createdAt) | .[] | .name + " " + .createdAt')
 
 cat > /tmp/NEWFILE.md << 'EOF'
 # TEXT HERE
@@ -22,54 +19,58 @@ Even more text here.
 Copyright by so and so... 
 EOF
 
-if [ "$DRY_RUN" = true ]; then
-  echo "DRY-RUN MODE - No changes will be pushed"
-  echo "Set DRY_RUN=false to actually push changes"
-  echo ""
-fi
-# Clone, add file, commit, push
-for repo in $repos; do
-  echo "Processing $repo..."
-  
-  # Clone repo using HTTPS
-  if git clone "https://github.com/$USERNAME/$repo.git" "/tmp/$repo" 2>/dev/null; then
+while IFS= read -r line; do
+    repo=$(echo "$line" | awk '{print $1}')
+    created_at=$(echo "$line" | awk '{print $2}')
+
+    echo "Processing $repo (created: $created_at)..."
+
+    rm -rf "/tmp/$repo"
+
+    if ! git clone -c core.autocrlf=false "https://github.com/$USERNAME/$repo.git" "/tmp/$repo" 2>&1; then
+        echo "  FAILED to clone $repo"
+        continue
+    fi
+
     cd "/tmp/$repo" || continue
-    
-    # Always copy/overwrite NEWFILE.md
+
     cp /tmp/NEWFILE.md .
     git add NEWFILE.md
-    
-    # Check if there are actually changes to commit
+
     if git diff --cached --quiet; then
-      echo "No changes needed for $repo (file already up to date)"
-    else
-      if git commit -S -m "Update commit verification documentation"; then
-        if [ "$DRY_RUN" = true ]; then
-          echo "[DRY-RUN] Would push NEWFILE.md to $repo"
-          echo "Commit created but not pushed"
-        else
-          git push
-          echo "Successfully updated NEWFILE.md in $repo"
-        fi
-      else
-        echo "Failed to commit to $repo"
-      fi
+        echo "  No changes needed for $repo"
+        cd /tmp
+        rm -rf "/tmp/$repo"
+        continue
     fi
-    
+
+    echo "  Changes detected, committing with date $created_at..."
+
+    if ! GIT_AUTHOR_DATE="$created_at" GIT_COMMITTER_DATE="$created_at" git commit -S -m "Update commit verification documentation" 2>&1; then
+        echo "  FAILED to commit to $repo - check GPG signing"
+        cd /tmp
+        rm -rf "/tmp/$repo"
+        continue
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "  [DRY-RUN] Would push NEWFILE.md to $repo"
+    else
+        if git push 2>&1; then
+            echo "  OK pushed NEWFILE.md to $repo"
+        else
+            echo "  FAILED to push to $repo"
+        fi
+    fi
+
     cd /tmp
     rm -rf "/tmp/$repo"
-  else
-    echo "Failed to clone $repo"
-  fi
-done
+
+done <<< "$repos"
+
+echo ""
 if [ "$DRY_RUN" = true ]; then
-  echo ""
-  echo "DRY-RUN COMPLETE - No changes were pushed"
-  echo "Review the output above, then set DRY_RUN=false to push for real"
+    echo "DRY-RUN COMPLETE - no changes pushed"
 else
-  echo ""
-  echo "Done! Processed all repos."
-
+    echo "Done processing all repos"
 fi
-
-
